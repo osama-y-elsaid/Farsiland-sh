@@ -1,0 +1,39 @@
+# Render blueprint. Push this repo to GitHub, then in Render:
+# New -> Blueprint -> pick the repo. Fill the secret values in the dashboard.
+services:
+  - type: web
+    name: farsiland
+    runtime: node
+    plan: starter          # a paid plan is required for the persistent disk below
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/catalog
+    disk:
+      name: farsiland-data # orders, catalog and messages live here and survive deploys
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DATA_DIR
+        value: /var/data
+      - key: NODE_VERSION
+        value: "20"
+      - key: ADMIN_TOKEN
+        generateValue: true   # Render generates one; copy it from the dashboard
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: SHOP_EMAIL
+        sync: false
+      - key: SHOP_PHONE
+        sync: false
+      - key: TAX_RATE
+        value: "0"

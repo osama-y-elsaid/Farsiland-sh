@@ -1,0 +1,29 @@
+# Netlify deploy config.
+#   publish  — only these files are public (index.html, admin.html, logo.png)
+#   functions — netlify/functions/api.mjs serves every /api/* route
+# Order data lives in Netlify Blobs, not on disk, so it survives redeploys.
+
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+  command = "echo 'no build step — static files are ready as-is'"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Never let the data or source directories be published
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/admin.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"

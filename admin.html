@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Farsiland — shop admin</title>
+<style>
+:root{
+  --green:#2d5016;--green-deep:#1f380f;--green-soft:#4a6b2f;--gold:#c9a961;--amber:#e0a33a;
+  --cream:#faf7f2;--paper:#fff;--parch:#efe8d8;--char:#2c2c2c;--gray:#7d7869;--line:#e4ddcc;--red:#9c3b23;
+  --display:Georgia,'Times New Roman',serif;
+  --ui:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,'Courier New',monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--char);font-family:var(--ui);font-size:15px;line-height:1.55}
+h1,h2,h3{font-family:var(--display);color:var(--green);margin:0 0 .4em;line-height:1.2}
+h1{font-size:1.5rem}h2{font-size:1.25rem;margin-top:0}h3{font-size:1rem}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.topbar{background:var(--green);color:var(--cream);padding:14px 0}
+.topbar .wrap{display:flex;align-items:center;gap:16px}
+.topbar b{font-family:var(--display);color:var(--gold);font-size:1.1rem}
+.topbar .who{margin-left:auto;font-family:var(--mono);font-size:.76rem;color:#cfd3c4}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--line);background:var(--paper)}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:14px 20px;font-size:.9rem;font-weight:600;color:var(--gray);cursor:pointer}
+.tabs button.on{color:var(--green);border-bottom-color:var(--gold)}
+main{padding:26px 0 60px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:3px;padding:20px;margin-bottom:18px}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{text-align:left;font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);padding:0 8px 8px;font-weight:700;white-space:nowrap}
+td{padding:7px 8px;border-top:1px solid var(--line);vertical-align:middle}
+td:first-child,th:first-child{padding-left:0}
+input,select,textarea{width:100%;padding:8px 9px;border:1.5px solid var(--line);border-radius:2px;font-family:var(--ui);font-size:.88rem;background:var(--paper);color:var(--char)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green-soft);box-shadow:0 0 0 3px rgba(74,107,47,.12)}
+input.num{font-family:var(--mono);text-align:right}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--green);background:var(--green);color:#fff;padding:10px 18px;font-size:.86rem;font-weight:600;border-radius:2px;cursor:pointer;text-decoration:none}
+.btn:hover{background:var(--green-deep)}
+.btn.ghost{background:transparent;color:var(--green)}
+.btn.ghost:hover{background:var(--green);color:#fff}
+.btn.sm{padding:6px 12px;font-size:.78rem}
+.btn.danger{border-color:var(--red);color:var(--red);background:none}
+.btn.danger:hover{background:var(--red);color:#fff}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+label.f{display:block;font-size:.76rem;font-weight:600;color:var(--gray);margin-bottom:5px}
+.pill{font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:2px;font-weight:700}
+.pill.available{background:#e7f0dd;color:var(--green)}
+.pill.low{background:#fbead1;color:#8a5a12}
+.pill.out_of_stock{background:#f0ece3;color:var(--gray)}
+.pill.coming_soon{background:var(--green);color:var(--gold)}
+.msg{padding:12px 15px;border-left:4px solid;margin:0 0 16px;font-size:.9rem}
+.msg.ok{background:#f1f6ea;border-color:var(--green-soft)}
+.msg.err{background:#fbeee9;border-color:var(--red)}
+.msg.warn{background:#fdf3e3;border-color:var(--amber)}
+.login{max-width:420px;margin:70px auto;background:var(--paper);border:1px solid var(--line);padding:28px}
+.hide{display:none}
+.sub{color:var(--gray);font-size:.82rem;margin:-4px 0 16px}
+.sticky-save{position:sticky;bottom:0;background:var(--cream);border-top:1px solid var(--line);padding:14px 0;display:flex;gap:12px;align-items:center}
+details.order>summary{cursor:pointer;padding:9px 0;list-style:none;display:flex;gap:14px;align-items:baseline;border-top:1px solid var(--line)}
+details.order>summary::-webkit-details-marker{display:none}
+details.order b{font-family:var(--mono);color:var(--green)}
+details.order .body{padding:8px 0 16px;font-size:.85rem}
+.kv{display:flex;justify-content:space-between;gap:14px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.kv span:last-child{font-family:var(--mono);text-align:right}
+</style>
+</head>
+<body>
+
+<div id="login" class="login">
+  <h1>Farsiland shop admin</h1>
+  <p class="sub">Enter the admin token from your server's <code>.env</code> file.</p>
+  <label class="f" for="token">Admin token</label>
+  <input type="password" id="token" autocomplete="current-password">
+  <div id="login-msg"></div>
+  <p style="margin-top:16px"><button class="btn" id="signin">Sign in</button></p>
+  <p class="sub" style="margin-top:18px">The token is held in this tab only — reloading signs you out.</p>
+</div>
+
+<div id="app" class="hide">
+  <div class="topbar"><div class="wrap">
+    <b>Farsiland</b><span style="font-size:.8rem;color:#cfd3c4">shop admin</span>
+    <span class="who"><a href="index.html" style="color:var(--gold)">View shop ↗</a></span>
+  </div></div>
+  <div class="tabs"><div class="wrap" style="display:flex">
+    <button data-tab="products" class="on">Products &amp; prices</button>
+    <button data-tab="promos">Promotions</button>
+    <button data-tab="settings">Settings</button>
+    <button data-tab="orders">Orders</button>
+  </div></div>
+
+  <main class="wrap">
+    <div id="msg"></div>
+
+    <!-- PRODUCTS -->
+    <section id="tab-products">
+      <div class="card">
+        <h2>Shares</h2>
+        <p class="sub">Price is what the customer pays. "Was" is optional — set it above the price to show a struck-through original on the shop. Status controls whether a share can be ordered at all.</p>
+        <div style="overflow-x:auto"><table id="prod-table"></table></div>
+      </div>
+      <div class="sticky-save">
+        <button class="btn" id="save-products">Save products</button>
+        <span class="sub" style="margin:0" id="prod-dirty"></span>
+      </div>
+    </section>
+
+    <!-- PROMOS -->
+    <section id="tab-promos" class="hide">
+      <div class="card">
+        <h2>Discount codes</h2>
+        <p class="sub">Customers enter these at the cart step. Percentages apply to the animals only, never to the delivery fee.</p>
+        <div style="overflow-x:auto"><table id="promo-table"></table></div>
+      </div>
+      <div class="card">
+        <h3>Add a code</h3>
+        <div class="row">
+          <div><label class="f" for="np-code">Code</label><input id="np-code" placeholder="EIDLAMB" style="text-transform:uppercase"></div>
+          <div><label class="f" for="np-label">Label shown to the customer</label><input id="np-label" placeholder="Eid lamb offer"></div>
+          <div><label class="f" for="np-type">Type</label><select id="np-type"><option value="percent">Percent off</option><option value="fixed">Dollars off</option></select></div>
+          <div><label class="f" for="np-value">Value</label><input id="np-value" class="num" type="number" min="1" value="10"></div>
+          <div><label class="f" for="np-applies">Applies to</label><select id="np-applies"><option value="all">Everything</option><option value="lamb">Lamb only</option><option value="goat">Goat only</option><option value="beef">Beef only</option></select></div>
+          <div><label class="f" for="np-expires">Expires (optional)</label><input id="np-expires" type="date"></div>
+        </div>
+        <p style="margin-top:14px"><button class="btn" id="add-promo">Add code</button></p>
+      </div>
+      <div class="card">
+        <h3>Site banner</h3>
+        <p class="sub">Shows as a strip across the top of every page. Leave empty for no banner. Basic HTML is allowed — e.g. <code>10% off whole lamb this week with code &lt;code&gt;EIDLAMB&lt;/code&gt;</code></p>
+        <input id="banner" placeholder="10% off whole lamb this week — code EIDLAMB">
+        <p style="margin-top:14px"><button class="btn" id="save-banner">Save banner</button></p>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="tab-settings" class="hide">
+      <div class="card">
+        <h2>Shop settings</h2>
+        <div class="row">
+          <div><label class="f" for="set-fee">Delivery fee ($)</label><input id="set-fee" class="num" type="number" min="0" step="1"></div>
+          <div><label class="f" for="set-radius">Online ordering radius (miles)</label><input id="set-radius" class="num" type="number" min="1" step="1"></div>
+          <div><label class="f" for="set-tax">Sales tax rate</label><input id="set-tax" class="num" type="number" min="0" max="0.2" step="0.001"></div>
+        </div>
+        <p class="sub" style="margin-top:12px">Tax is a decimal — 0.095 means 9.5%. Radius is straight-line distance from the shop; anything beyond it is phone-only.</p>
+        <p><button class="btn" id="save-settings">Save settings</button></p>
+      </div>
+      <div class="card">
+        <h3>Opening a species for orders</h3>
+        <p class="sub">Beef and goat ship as <b>Coming soon</b>. Their cut sheets are already built — set every share of that species to <b>In stock</b> on the Products tab and they go live immediately, no code changes.</p>
+      </div>
+    </section>
+
+    <!-- ORDERS -->
+    <section id="tab-orders" class="hide">
+      <div class="card">
+        <h2>Orders</h2>
+        <p class="sub" id="orders-sub">Newest first. Open one to see the cut sheet your butchers work from.</p>
+        <div id="orders-list"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const API = "";            // "" = same origin, e.g. "http://localhost:4242"
+let TOKEN = "";
+let CAT = null;
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const money = n => "$" + Number(n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const STATUSES = ["available","low","out_of_stock","coming_soon"];
+const STATUS_LABEL = { available:"In stock", low:"Low stock", out_of_stock:"Out of stock", coming_soon:"Coming soon" };
+const esc = s => String(s==null?"":s).replace(/[<>&"]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]));
+
+async function api(path, method="GET", body){
+  const r = await fetch(API + path, {
+    method,
+    headers: Object.assign({"x-admin-token":TOKEN}, body?{"Content-Type":"application/json"}:{}),
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const data = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(data.error || `Request failed (${r.status})`);
+  return data;
+}
+function say(kind, text){
+  $("#msg").innerHTML = `<div class="msg ${kind}">${text}</div>`;
+  if(kind === "ok") setTimeout(() => { $("#msg").innerHTML = ""; }, 3500);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ---------- sign in ---------- */
+$("#signin").onclick = async () => {
+  TOKEN = $("#token").value.trim();
+  if(!TOKEN){ $("#login-msg").innerHTML = `<div class="msg err">Enter the token.</div>`; return; }
+  try{
+    CAT = await api("/api/admin/catalog");
+    $("#login").classList.add("hide");
+    $("#app").classList.remove("hide");
+    renderProducts(); renderPromos(); renderSettings();
+  }catch(e){
+    $("#login-msg").innerHTML = `<div class="msg err">${esc(e.message)}<br><span style="font-size:.8rem">If the server isn't running, start it with <code>npm start</code> first.</span></div>`;
+  }
+};
+$("#token").addEventListener("keydown", e => { if(e.key === "Enter") $("#signin").click(); });
+
+/* ---------- tabs ---------- */
+$$(".tabs button").forEach(b => b.onclick = () => {
+  $$(".tabs button").forEach(x => x.classList.toggle("on", x === b));
+  ["products","promos","settings","orders"].forEach(t =>
+    $("#tab-"+t).classList.toggle("hide", t !== b.dataset.tab));
+  if(b.dataset.tab === "orders") loadOrders();
+});
+
+/* ---------- products ---------- */
+function renderProducts(){
+  const rows = Object.entries(CAT.products).map(([id,p]) => `
+    <tr data-id="${id}">
+      <td><b>${esc(p.label)}</b><br><span style="font-size:.75rem;color:var(--gray)">${esc(id)}</span></td>
+      <td><input class="num" data-f="price" type="number" min="0" step="1" value="${p.price}"></td>
+      <td><input class="num" data-f="compareAt" type="number" min="0" step="1" value="${p.compareAt||0}"></td>
+      <td><select data-f="status">${STATUSES.map(s =>
+            `<option value="${s}" ${p.status===s?"selected":""}>${STATUS_LABEL[s]}</option>`).join("")}</select></td>
+      <td><input data-f="hanging" value="${esc(p.hanging)}"></td>
+      <td><input data-f="takehome" value="${esc(p.takehome)}"></td>
+      <td><input data-f="feeds" value="${esc(p.feeds)}"></td>
+    </tr>`).join("");
+  $("#prod-table").innerHTML = `<thead><tr>
+      <th>Share</th><th style="width:100px">Price</th><th style="width:100px">Was</th>
+      <th style="width:150px">Status</th><th style="width:130px">Hanging</th>
+      <th style="width:130px">Take-home</th><th>Blurb</th></tr></thead><tbody>${rows}</tbody>`;
+  $$("#prod-table input,#prod-table select").forEach(el =>
+    el.oninput = () => $("#prod-dirty").textContent = "Unsaved changes");
+}
+$("#save-products").onclick = async () => {
+  $$("#prod-table tbody tr").forEach(tr => {
+    const p = CAT.products[tr.dataset.id];
+    tr.querySelectorAll("[data-f]").forEach(el => {
+      const f = el.dataset.f;
+      p[f] = (f === "price" || f === "compareAt") ? Number(el.value || 0) : el.value;
+    });
+  });
+  try{
+    CAT = await api("/api/admin/catalog","PUT",CAT);
+    $("#prod-dirty").textContent = "";
+    renderProducts();
+    say("ok","Prices and availability saved. The shop picks them up on the next page load.");
+  }catch(e){ say("err", esc(e.message)); }
+};
+
+/* ---------- promos ---------- */
+function renderPromos(){
+  const list = CAT.promos || [];
+  const rows = list.length ? list.map((p,i) => `
+    <tr>
+      <td><b style="font-family:var(--mono)">${esc(p.code)}</b></td>
+      <td>${esc(p.label||"")}</td>
+      <td>${p.type === "percent" ? p.value + "%" : money(p.value)}</td>
+      <td>${p.appliesTo === "all" ? "Everything" : esc(p.appliesTo)}</td>
+      <td>${p.expires ? esc(p.expires) : "—"}</td>
+      <td><span class="pill ${p.active !== false ? "available" : "out_of_stock"}">${p.active !== false ? "Live" : "Paused"}</span></td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn ghost sm" data-toggle="${i}">${p.active !== false ? "Pause" : "Resume"}</button>
+        <button class="btn danger sm" data-del="${i}">Delete</button></td>
+    </tr>`).join("")
+    : `<tr><td colspan="7" style="color:var(--gray);padding:16px 0">No codes yet.</td></tr>`;
+  $("#promo-table").innerHTML = `<thead><tr><th>Code</th><th>Label</th><th>Discount</th>
+    <th>Applies to</th><th>Expires</th><th>State</th><th></th></tr></thead><tbody>${rows}</tbody>`;
+  $$("#promo-table [data-toggle]").forEach(b => b.onclick = async () => {
+    const p = CAT.promos[+b.dataset.toggle]; p.active = p.active === false;
+    await savePromos("Code " + (p.active ? "resumed" : "paused") + ".");
+  });
+  $$("#promo-table [data-del]").forEach(b => b.onclick = async () => {
+    if(!confirm(`Delete ${CAT.promos[+b.dataset.del].code}? Customers using it will be told it's invalid.`)) return;
+    CAT.promos.splice(+b.dataset.del,1);
+    await savePromos("Code deleted.");
+  });
+}
+async function savePromos(note){
+  try{ CAT = await api("/api/admin/catalog","PUT",CAT); renderPromos(); say("ok",note); }
+  catch(e){ say("err", esc(e.message)); }
+}
+$("#add-promo").onclick = async () => {
+  const code = ($("#np-code").value||"").trim().toUpperCase();
+  const value = Number($("#np-value").value||0);
+  if(!/^[A-Z0-9]{3,20}$/.test(code)) return say("err","Codes are 3–20 letters and numbers, no spaces.");
+  if(!(value > 0)) return say("err","Give the code a value above zero.");
+  if($("#np-type").value === "percent" && value > 90) return say("err","That's more than 90% off — check the number.");
+  if((CAT.promos||[]).some(p => p.code === code)) return say("err","That code already exists.");
+  CAT.promos = CAT.promos || [];
+  CAT.promos.push({ code, label:$("#np-label").value.trim(), type:$("#np-type").value,
+    value, appliesTo:$("#np-applies").value, expires:$("#np-expires").value || null, active:true });
+  $("#np-code").value = ""; $("#np-label").value = "";
+  await savePromos(`Code ${code} is live.`);
+};
+$("#save-banner").onclick = async () => {
+  CAT.settings.banner = $("#banner").value.trim();
+  try{ CAT = await api("/api/admin/catalog","PUT",CAT); say("ok", CAT.settings.banner ? "Banner updated." : "Banner cleared."); }
+  catch(e){ say("err", esc(e.message)); }
+};
+
+/* ---------- settings ---------- */
+function renderSettings(){
+  $("#set-fee").value = CAT.settings.deliveryFee;
+  $("#set-radius").value = CAT.settings.radiusMiles;
+  $("#set-tax").value = CAT.settings.taxRate;
+  $("#banner").value = CAT.settings.banner || "";
+}
+$("#save-settings").onclick = async () => {
+  CAT.settings.deliveryFee = Number($("#set-fee").value||0);
+  CAT.settings.radiusMiles = Number($("#set-radius").value||50);
+  CAT.settings.taxRate = Number($("#set-tax").value||0);
+  try{ CAT = await api("/api/admin/catalog","PUT",CAT); renderSettings(); say("ok","Settings saved."); }
+  catch(e){ say("err", esc(e.message)); }
+};
+
+/* ---------- orders ---------- */
+async function loadOrders(){
+  $("#orders-list").innerHTML = `<p class="sub">Loading…</p>`;
+  try{
+    const list = await api("/api/admin/orders");
+    if(!list.length){ $("#orders-list").innerHTML = `<p class="sub">No orders yet.</p>`; return; }
+    $("#orders-sub").textContent = `${list.length} order${list.length>1?"s":""}, newest first. Open one to see the cut sheet your butchers work from.`;
+    $("#orders-list").innerHTML = list.map(o => `
+      <details class="order">
+        <summary><b>${esc(o.orderNumber)}</b>
+          <span>${esc(o.customer.name)}</span>
+          <span style="color:var(--gray)">${new Date(o.createdAt).toLocaleDateString("en-US",{month:"short",day:"numeric"})}</span>
+          <span style="color:var(--gray)">${o.items.reduce((n,i)=>n+i.quantity,0)} animal(s)</span>
+          <span style="margin-left:auto;font-family:var(--mono)">${money(o.amounts.total)}</span></summary>
+        <div class="body">
+          <div class="kv"><span>Contact</span><span>${esc(o.customer.phone)} · ${esc(o.customer.email)}</span></div>
+          <div class="kv"><span>${o.fulfilment === "delivery" ? "Deliver to" : "Pickup"}</span><span>${
+            o.fulfilment === "delivery" ? esc(o.address.street + ", " + o.address.city + " " + o.address.zip) : "Shop"} · ${o.distanceMiles} mi</span></div>
+          ${o.deliveryWindow ? `<div class="kv"><span>Window</span><span>${esc(o.deliveryWindow)} (within 24h of packing)</span></div>` : ""}
+          ${o.readyDate ? `<div class="kv"><span>Requested ready</span><span>${esc(o.readyDate)}</span></div>` : ""}
+          ${o.promoCode ? `<div class="kv"><span>Promo</span><span>${esc(o.promoCode)} · −${money(o.amounts.discount)}</span></div>` : ""}
+          ${o.items.map(it => `
+            <h3 style="margin:14px 0 4px">${esc(it.shareLabel || it.shareId)}${it.quantity>1?` ×${it.quantity}`:""}${it.side?` — ${esc(it.side)} quarter`:""}</h3>
+            ${it.cuts.map(c => `<div class="kv"><span>${esc(c.primal)}</span><span>${esc(c.choice)}</span></div>`).join("")}
+            <div class="kv"><span>Specs</span><span>${Object.values(it.specs).map(v => esc(typeof v === "boolean" ? (v?"yes":"no") : v)).join(" · ")}</span></div>
+            <div class="kv"><span>Keeping</span><span>${it.offal.length?esc(it.offal.join(", ")):"Nothing"}</span></div>
+            ${it.notes?`<div class="kv"><span>Notes</span><span>${esc(it.notes)}</span></div>`:""}
+          `).join("")}
+        </div>
+      </details>`).join("");
+  }catch(e){ $("#orders-list").innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+}
+</script>
+</body>
+</html>
